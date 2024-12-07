@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Users</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body onload="load();">
+<div class="container">
+    <div class="panel panel-default">
+        <!-- Kullanıcı Ekleme Yönlendirme -->
+        <a th:href="@{/users/getPageUserAdd}" class="btn btn-info">Kullanıcı Ekle</a>
+        <!-- Kullanıcı Tablosu -->
+        <table id="table" border="1" class="table table-hover">
+            <tr>
+                <th>Kullanıcı ID</th>
+                <th>Ad</th>
+                <th>Email</th>
+                <th>Şifre</th>
+                <th>Oluşturulma Tarihi</th>
+                <th>Düzenle</th>
+                <th>Sil</th>
+            </tr>
+            <tbody>
+                <!-- Thymeleaf ile Verilerin Gösterimi -->
+                <tr th:each="data : ${datas}">
+                    <td th:text="${data.id}"></td>
+                    <td th:text="${data.name}"></td>
+                    <td th:text="${data.email}"></td>
+                    <td th:text="${data.password}"></td>
+                    <td th:text="${#dates.format(data.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                    <td>
+
+                        <a class="btn btn-info fa fa-pencil" th:href="@{/users/edit/{id}(id=${data.id})}">Düzenle</a>
+                    </td>
+                    <td>
+                        <a class="btn btn-danger" th:href="@{/users/userDelete/{id}(id=${data.id})}">Sil</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- Dinamik İşlemler için JavaScript -->
+<!-- Mevcut Fonksiyonlar -->
+<<script type="text/javascript">
+    let data = "";
+    submit = function () {
+        $.ajax({
+            url: 'saveOrUpdate',
+            type: 'POST',
+            data: {
+                id: $("#userId").val(), 
+                name: $('#userName').val(), 
+                email: $('#email').val(),
+                password: $('#password').val()
+            },
+            success: function (response) {
+                alert(response.message);
+                load();
+            }
+        });
+    };
+    delete_ = function (id) {
+        $.ajax({
+            url: 'delete',
+            type: 'POST',
+            data: { id: id }, 
+            success: function (response) {
+                alert(response.message);
+                load();
+            }
+        });
+    };
+    edit = function (index) {
+        $("#userId").val(data[index].id); 
+        $("#userName").val(data[index].name); 
+        $("#email").val(data[index].email);
+        $("#password").val(data[index].password); 
+    };
+    load = function () {
+        $.ajax({
+            url: 'list',
+            type: 'POST',
+            success: function (response) {
+                data = response.data;
+                $('.tr').remove();
+                for (let i = 0; i < response.data.length; i++) {
+                    $("#table").append(
+                        "<tr class='tr'>" +
+                        "<td>" + response.data[i].id + "</td>" +
+                        "<td>" + response.data[i].name + "</td>" +
+                        "<td>" + response.data[i].email + "</td>" +
+                        "<td><a href='#' onclick='edit(" + i + ");'> Düzenle </a></td>" +
+                        "<td><a href='#' onclick='delete_(" + response.data[i].id + ");'> Sil </a></td>" +
+                        "</tr>"
+                    );
+                }
+            }
+        });
+    };
+</script>
+</body>
+</html>
